@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archivo Central - Instituto Nacional de Ciencias Neurológicas (INCN)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js para gráficos estadísticos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans">
+
+    <!-- Header Institucional con Logotipos Grandes Distribuidos -->
+    <header class="bg-gradient-to-r from-blue-950 via-blue-900 to-slate-900 text-white shadow-xl border-b-4 border-blue-500">
+        <div class="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            
+            <!-- Logotipo Izquierdo (Cyber) -->
+            <div class="flex items-center gap-4">
+                <div class="bg-white p-2 rounded-2xl shadow-lg border border-blue-300 flex items-center justify-center">
+                    <img src="cyber.png" alt="Logo Cyber" class="h-16 w-16 object-contain" onerror="this.src='https://via.placeholder.com/64?text=Cyber'">
+                </div>
+                <div class="text-left hidden lg:block">
+                    <span class="block text-[10px] text-blue-300 uppercase tracking-widest font-bold">Unidad Operativa</span>
+                    <span class="text-sm font-extrabold tracking-tight">Sistemas Digitales</span>
+                </div>
+            </div>
+
+            <!-- Título Central -->
+            <div class="text-center space-y-1">
+                <span class="text-xs uppercase tracking-widest text-cyan-400 font-extrabold bg-blue-900/60 px-3 py-1 rounded-full border border-blue-500/30">El Archivo Central</span>
+                <h1 class="text-xl md:text-2xl font-black tracking-tight text-white">Instituto Nacional de Ciencias Neurológicas (INCN)</h1>
+                <p class="text-blue-200 text-xs font-medium">Sistema de Gestión, Microformas e Historias Clínicas</p>
+            </div>
+
+            <!-- Logotipo Derecho (INCN / Ins) y Contador -->
+            <div class="flex items-center gap-4">
+                <div class="bg-blue-950/80 px-5 py-2.5 rounded-2xl border border-blue-500/40 text-center shadow-inner">
+                    <span class="block text-[10px] text-blue-300 font-bold uppercase tracking-wider">Total Historias</span>
+                    <span id="totalRecords" class="text-2xl font-black text-cyan-400">100</span>
+                </div>
+                <div class="bg-white p-2 rounded-2xl shadow-lg border border-blue-300 flex items-center justify-center">
+                    <img src="ins.png" alt="Logo INCN" class="h-16 w-16 object-contain" onerror="this.src='https://via.placeholder.com/64?text=INCN'">
+                </div>
+            </div>
+
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8 space-y-8">
+
+        <!-- Panel de Analítica Estadística con Gráficos estilizados -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Gráfico 1: Distribución por Sexo -->
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200/80 flex flex-col justify-between hover:shadow-lg transition-shadow">
+                <h3 class="text-xs font-bold text-blue-900 uppercase tracking-wider mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-venus-mars text-blue-600"></i> Distribución por Sexo
+                </h3>
+                <div class="relative h-64 flex justify-center items-center">
+                    <canvas id="genderChart"></canvas>
+                </div>
+            </div>
+            <!-- Gráfico 2: Rangos de Edad -->
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200/80 flex flex-col justify-between hover:shadow-lg transition-shadow">
+                <h3 class="text-xs font-bold text-blue-900 uppercase tracking-wider mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-pie text-indigo-600"></i> Rangos de Edad
+                </h3>
+                <div class="relative h-64 flex justify-center items-center">
+                    <canvas id="ageChart"></canvas>
+                </div>
+            </div>
+            <!-- Gráfico 3: Distribución por Departamentos -->
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200/80 flex flex-col justify-between hover:shadow-lg transition-shadow">
+                <h3 class="text-xs font-bold text-blue-900 uppercase tracking-wider mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-column text-blue-600"></i> Historias por Departamento
+                </h3>
+                <div class="relative h-64 flex justify-center items-center">
+                    <canvas id="deptBarChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtros de Búsqueda y Ubicación -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200/80 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-4">
+                <h2 class="text-md font-bold text-blue-950 flex items-center gap-2">
+                    <i class="fa-solid fa-magnifying-glass text-blue-600"></i> Filtros de Búsqueda y Ubicación Geográfica
+                </h2>
+                <button onclick="resetFilters()" class="text-xs text-blue-700 hover:text-white font-semibold flex items-center gap-1.5 bg-blue-50 hover:bg-blue-600 px-3.5 py-2 rounded-xl transition shadow-sm">
+                    <i class="fa-solid fa-rotate-right"></i> Restablecer Filtros
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">H.C. (N° Historia)</label>
+                    <input type="text" id="filterHC" onkeyup="filterTable()" placeholder="Ej. 00033" class="w-full text-sm border border-slate-300 rounded-xl px-3.5 py-2.5 focus:ring-2 focus:ring-blue-600 focus:outline-none bg-slate-50/50">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Nombre del Paciente</label>
+                    <input type="text" id="filterNombre" onkeyup="filterTable()" placeholder="Buscar por nombre..." class="w-full text-sm border border-slate-300 rounded-xl px-3.5 py-2.5 focus:ring-2 focus:ring-blue-600 focus:outline-none bg-slate-50/50">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Departamento</label>
+                    <input type="text" id="filterDep" onkeyup="filterTable()" placeholder="Ej. Lima, Callao..." class="w-full text-sm border border-slate-300 rounded-xl px-3.5 py-2.5 focus:ring-2 focus:ring-blue-600 focus:outline-none bg-slate-50/50">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Provincia</label>
+                    <input type="text" id="filterProv" onkeyup="filterTable()" placeholder="Ej. Lima, Callao..." class="w-full text-sm border border-slate-300 rounded-xl px-3.5 py-2.5 focus:ring-2 focus:ring-blue-600 focus:outline-none bg-slate-50/50">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Distrito</label>
+                    <input type="text" id="filterDist" onkeyup="filterTable()" placeholder="Ej. Comas, Breña..." class="w-full text-sm border border-slate-300 rounded-xl px-3.5 py-2.5 focus:ring-2 focus:ring-blue-600 focus:outline-none bg-slate-50/50">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">F. Afiliación</label>
+                    <input type="text" id="filterFecha" onkeyup="filterTable()" placeholder="Ej. 10/1/1989" class="w-full text-sm border border-slate-300 rounded-xl px-3.5 py-2.5 focus:ring-2 focus:ring-blue-600 focus:outline-none bg-slate-50/50">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Edad</label>
+                    <input type="text" id="filterEdad" onkeyup="filterTable()" placeholder="Ej. 35" class="w-full text-sm border border-slate-300 rounded-xl px-3.5 py-2.5 focus:ring-2 focus:ring-blue-600 focus:outline-none bg-slate-50/50">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Sexo</label>
+                    <select id="filterSexo" onchange="filterTable()" class="w-full text-sm border border-slate-300 rounded-xl px-3.5 py-2.5 focus:ring-2 focus:ring-blue-600 focus:outline-none bg-slate-50/50">
+                        <option value="">Todos</option>
+                        <option value="M">Masculino (M)</option>
+                        <option value="F">Femenino (F)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de Registros -->
+        <div class="bg-white rounded-2xl shadow-md border border-slate-200/80 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-blue-900 text-white text-xs uppercase tracking-wider">
+                            <th class="py-4 px-4 font-bold">H.C.</th>
+                            <th class="py-4 px-4 font-bold">Nombre del Paciente</th>
+                            <th class="py-4 px-4 font-bold">F. Afiliac.</th>
+                            <th class="py-4 px-4 font-bold">Edad</th>
+                            <th class="py-4 px-4 font-bold">Sexo</th>
+                            <th class="py-4 px-4 font-bold">Departamento</th>
+                            <th class="py-4 px-4 font-bold">Provincia</th>
+                            <th class="py-4 px-4 font-bold">Distrito</th>
+                            <th class="py-4 px-4 font-bold">Observación</th>
+                            <th class="py-4 px-4 font-bold text-center">Historia Clínica (PDF)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-slate-200 text-sm text-slate-700"></tbody>
+                </table>
+            </div>
+            <div class="bg-slate-50 px-6 py-4 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-semibold">
+                <span id="tableCount">Mostrando 100 de 100 registros</span>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal Visualizador de PDF -->
+    <div id="pdfModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm hidden justify-center items-center z-50 p-4">
+        <div class="bg-white w-full max-w-4xl h-[85vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-slate-200">
+            <div class="bg-blue-900 text-white px-6 py-4 flex justify-between items-center shadow">
+                <h3 id="modalTitle" class="font-bold text-base flex items-center gap-2">
+                    <i class="fa-solid fa-file-pdf text-red-400"></i> Visualizador de Historia Clínica
+                </h3>
+                <button onclick="closePdfModal()" class="text-blue-200 hover:text-white transition-colors text-lg font-bold px-2.5 py-1 rounded-lg hover:bg-blue-800">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="flex-1 bg-slate-100 p-2 relative flex items-center justify-center">
+                <iframe id="pdfFrame" src="" class="w-full h-full rounded-2xl border border-slate-300 bg-white"></iframe>
+                <div id="fallbackMsg" class="absolute hidden flex-col items-center justify-center text-center p-6 bg-white inset-0">
+                    <i class="fa-solid fa-folder-open text-4xl text-amber-500 mb-2"></i>
+                    <p class="font-semibold text-slate-700">No se pudo cargar el visor embebido del navegador.</p>
+                    <p class="text-xs text-slate-500 mt-1">Verifica que el archivo exista en la carpeta local <code class="bg-slate-100 px-1 py-0.5 rounded text-blue-600 font-mono">pdf/</code>.</p>
+                    <a id="downloadLink" href="#" target="_blank" class="mt-4 px-5 py-2.5 bg-blue-700 text-white rounded-xl text-sm font-semibold hover:bg-blue-800 transition shadow">
+                        Abrir PDF en nueva pestaña
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Base de Datos Exacta de los 100 Registros e Inicialización de Estadísticas -->
+    <script>
+        const data = [
+            { archivo: "1 cobeñas.pdf", hc: "00030", nombre: "COBEÑAS LADRA, MICAEL", fecha: "10/1/1989", edad: "M", sexo: "M", dep: "Callao", prov: "Callao", dist: "Santa Rosa", obs: "" },
+            { archivo: "2 velezmoro palacio.pdf", hc: "00032", nombre: "VELEZMORO PALACIOS, MARIA V.", fecha: "11/1/1989", edad: "35", sexo: "F", dep: "Lima", prov: "Lima", dist: "San Juan de Lurigancho", obs: "" },
+            { archivo: "3 lopez palomares.pdf", hc: "00033", nombre: "LOPEZ PALOMARES, CINTHYA, ELY", fecha: "12/1/1989", edad: "18", sexo: "F", dep: "Junín", prov: "Tarma", dist: "Tarma", obs: "" },
+            { archivo: "4 principe salvador.pdf", hc: "00044", nombre: "PRINCIPE SALVADOR, JENNY URSULA", fecha: "13/1/1989", edad: "20", sexo: "F", dep: "Lima", prov: "Barranca", dist: "Paramonga", obs: "" },
+            { archivo: "5 leon castro.pdf", hc: "00059", nombre: "LEON CASTRO, ALAIN CHRISTIAN", fecha: "14/1/1989", edad: "20", sexo: "M", dep: "Piura", prov: "Piura", dist: "Piura", obs: "" },
+            { archivo: "6 vilchez solano.pdf", hc: "00064", nombre: "VILCHEZ SOLANO, JOSE", fecha: "15/1/1989", edad: "16", sexo: "M", dep: "Lima", prov: "Lima", dist: "La Victoria", obs: "NO FIGURA ATENC. MED." },
+            { archivo: "7 rodriguez vasquez.pdf", hc: "00104", nombre: "RODRIGUEZ VASQUEZ, KATHERINE M.", fecha: "16/1/1989", edad: "6", sexo: "F", dep: "Callao", prov: "Callao", dist: "Callao", obs: "" },
+            { archivo: "8 davila agip.pdf", hc: "00108", nombre: "DAVILA AGIP, CLERIDA", fecha: "17/1/1989", edad: "16", sexo: "F", dep: "Lima", prov: "Lima", dist: "El Agustino", obs: "" },
+            { archivo: "9 malpartida flores.pdf", hc: "00112", nombre: "MALPARTIDA FLORES, WESON", fecha: "18/1/1989", edad: "1", sexo: "M", dep: "Lima", prov: "Lima", dist: "La Victoria", obs: "" },
+            { archivo: "10 varillas quispe.pdf", hc: "00114", nombre: "VARILLAS SILVA, DIEGO FERNANDO", fecha: "19/1/1989", edad: "5", sexo: "M", dep: "Lima", prov: "Lima", dist: "Ate", obs: "NO FIGURA ATENC. MED." },
+            { archivo: "11 aponte espinoza.pdf", hc: "00121", nombre: "APONTE ESPINOZA, SERGIA", fecha: "20/1/1989", edad: "34", sexo: "F", dep: "Lima", prov: "Lima", dist: "Lima", obs: "DUPLICADO Nº H.C." },
+            { archivo: "12 garay contreras.pdf", hc: "00125", nombre: "GARAY CONTRERAS, PELAGIA", fecha: "21/1/1989", edad: "46", sexo: "F", dep: "Ayacucho", prov: "Huamanga", dist: "Ayacucho", obs: "DUPLICADO Nº H.C." },
+            { archivo: "13 cueva maza.pdf", hc: "00133", nombre: "CUEVA MAZA, WALTER VICENTE", fecha: "22/1/1989", edad: "32", sexo: "M", dep: "Lima", prov: "Lima", dist: "Puente Piedra", obs: "" },
+            { archivo: "14 muñoz ocampo.pdf", hc: "00144", nombre: "MUÑOZ OCAMPO, JULIO CESAR", fecha: "23/1/1989", edad: "55", sexo: "M", dep: "Lima", prov: "Lima", dist: "Comas", obs: "DUPLICADO Nº H.C." },
+            { archivo: "15 caballero c.pdf", hc: "00186", nombre: "CABALLERO C., JOSE PEDRO", fecha: "24/1/1989", edad: "27", sexo: "M", dep: "Lima", prov: "Lima", dist: "Magdalena del Mar", obs: "" },
+            { archivo: "16 caceres buitron carlos.pdf", hc: "00187", nombre: "CACERES BUITRON, CARLOS", fecha: "10/3/1989", edad: "16", sexo: "M", dep: "Lima", prov: "Lima", dist: "Pueblo Libre", obs: "FALLECIDO" },
+            { archivo: "17 gray aramburu.pdf", hc: "00187", nombre: "GRAY ARAMBURU, ANDREA GABRIELA", fecha: "26/1/1989", edad: "18", sexo: "F", dep: "Lima", prov: "Lima", dist: "Chorrillos", obs: "1 CONSULTA/DUPUC. H.C." },
+            { archivo: "18 cachari albino.pdf", hc: "00189", nombre: "CACHARI ALBINO, HERNAN", fecha: "16/8/1990", edad: "17", sexo: "M", dep: "Lima", prov: "Lima", dist: "Lima", obs: "" },
+            { archivo: "19 condeso andres.pdf", hc: "00192", nombre: "CONDESO, ANDRES", fecha: "28/1/1989", edad: "59", sexo: "M", dep: "Lima", prov: "Lima", dist: "Lima", obs: "" },
+            { archivo: "20 condor mejia.pdf", hc: "00193", nombre: "CONDOR MEJIA, GILBERTO", fecha: "29/1/1989", edad: "53", sexo: "M", dep: "Lima", prov: "Lima", dist: "Chancay", obs: "" },
+            { archivo: "21 correa alejandro.pdf", hc: "00194", nombre: "CORREA, ALEJANDRO", fecha: "30/1/1989", edad: "68", sexo: "M", dep: "Lima", prov: "Lima", dist: "Lima", obs: "" },
+            { archivo: "22 de la cruz.pdf", hc: "00195", nombre: "DE LA CRUZ, CARLOS", fecha: "29/4/1952", edad: "", sexo: "M", dep: "Lima", prov: "Lima", dist: "Lima", obs: "" },
+            { archivo: "23 chu kuay.pdf", hc: "00197", nombre: "CHI KUAY, RIAN", fecha: "1/2/1989", edad: "58", sexo: "M", dep: "Lima", prov: "Lima", dist: "Lima", obs: "" },
+            { archivo: "24 diaz muñoz.pdf", hc: "00198", nombre: "DIAZ MUÑOZ, SALOMON", fecha: "18/4/1989", edad: "", sexo: "M", dep: "Lima", prov: "Lima", dist: "Lima", obs: "" },
+            { archivo: "25 elias zelaya.pdf", hc: "00199", nombre: "ELIAS CELAYA, TEOBALDO", fecha: "5/5/1954", edad: "41", sexo: "M", dep: "Lima", prov: "Lima", dist: "Lince", obs: "" },
+            { archivo: "26 meza pascual.pdf", hc: "00200", nombre: "MEZA PASCUAL, FRANCISCO", fecha: "4/2/1989", edad: "20", sexo: "M", dep: "Lima", prov: "Lima", dist: "Ate", obs: "1 CONSULTA/DUPUC. H.C." },
+            { archivo: "27 fermin escate.pdf", hc: "00200", nombre: "ESCATE, FERMIN", fecha: "5/2/1989", edad: "39", sexo: "M", dep: "Lima", prov: "Lima", dist: "Lima", obs: "FALLECIDO" },
+            { archivo: "28 casanova choquepuma.pdf", hc: "00202", nombre: "CASANOVA CHOQUEPUMA, GABRIELA L.", fecha: "6/2/1989", edad: "6", sexo: "F", dep: "Lima", prov: "Lima", dist: "Ate", obs: "1 CONSULTA" },
+            { archivo: "29 garay tarazona.pdf", hc: "00203", nombre: "GARAY TARAZONA, TOMAS", fecha: "18/7/1951", edad: "54", sexo: "M", dep: "Lima", prov: "Lima", dist: "Lima", obs: "" },
+            { archivo: "30 grande manrique.pdf", hc: "00206", nombre: "GRANDE MANRIQUE, AUGUSTO", fecha: "5/4/1957", edad: "47", sexo: "M", dep: "Lima", prov: "Lima", dist: "Lima", obs: "" },
+            { archivo: "31 guevara flores.pdf", hc: "00207", nombre: "GUEVARA FLORES, EDUARDO", fecha: "01/30/1951", edad: "", sexo: "M", dep: "Lima", prov: "Lima", dist: "Lima", obs: "" },
+            { archivo: "32 huaman bendezu.pdf", hc: "00209", nombre: "HUAMAN BENDEZU, FRANCISCO", fecha: "20/1/1958", edad: "17", sexo: "M", dep: "Ica", prov: "Ica", dist: "Ica", obs: "FALLECIDO" },
+            { archivo: "33 toda bueno.pdf", hc: "00210", nombre: "TODA BUENO", fecha: "11/2/1989", edad: "76", sexo: "M", dep: "Lima", prov: "Lima", dist: "Lima", obs: "" },
+            { archivo: "34 huapaya ramirez.pdf", hc: "00211", nombre: "HUAPAYA RAMIREZ, ADOLFO", fecha: "9/9/1959", edad: "62", sexo: "M", dep: "Lima", prov: "Lima", dist: "Chorrillos", obs: "FALLECIDO" },
+            { archivo: "35 joya sanchez.pdf", hc: "00212", nombre: "JOYA SANCHEZ, PEDRO", fecha: "13/2/1989", edad: "43", sexo: "M", dep: "Lima", prov: "Lima", dist: "Callao", obs: "" },
+            { archivo: "36 peña lizandro.pdf", hc: "00213", nombre: "PEÑA LIZANDRO, MIRTHA", fecha: "14/2/1989", edad: "24", sexo: "F", dep: "Lima", prov: "Lima", dist: "San Martín de Porres", obs: "" },
+            { archivo: "37 valenzuela albino.pdf", hc: "00238", nombre: "VALENZUELA, ALBINO", fecha: "15/2/1989", edad: "52", sexo: "M", dep: "Junín", prov: "Huancayo", dist: "Huancayo", obs: "" },
+            { archivo: "38 bao fernandez.pdf", hc: "00250", nombre: "BAO FERNANDEZ, SIXTO VALENTIN", fecha: "10/11/1954", edad: "50", sexo: "M", dep: "Lima", prov: "Lima", dist: "Lima", obs: "" },
+            { archivo: "39 huaman ramirez.pdf", hc: "00257", nombre: "HUAMAN RAMIREZ, LUZ", fecha: "8/9/1973", edad: "10", sexo: "F", dep: "Lima", prov: "Lima", dist: "Lima", obs: "" },
+            { archivo: "40 rodriguez lopez.pdf", hc: "00262", nombre: "RODRIGUEZ LOPEZ, WENDY MARINO", fecha: "18/2/1989", edad: "9", sexo: "F", dep: "Lima", prov: "Lima", dist: "Rímac", obs: "1 CONSULTA" },
+            { archivo: "41 quispe ventosaca.pdf", hc: "00263", nombre: "QUISPE VENTOSACA, ROSA SALOME", fecha: "19/2/1989", edad: "42", sexo: "F", dep: "Lima", prov: "Cañete", dist: "Cañete", obs: "" },
+            { archivo: "42 meza soto.pdf", hc: "00270", nombre: "MEZA SOTO, MARCELINO", fecha: "20/2/1989", edad: "47", sexo: "M", dep: "Pasco", prov: "Pasco", dist: "Pasco", obs: "" },
+            { archivo: "43 cahuana varios.pdf", hc: "00286", nombre: "CAHUANA BARRICS, NEMECIA", fecha: "21/2/1989", edad: "53", sexo: "F", dep: "Lima", prov: "Lima", dist: "Los Olivos", obs: "1 CONSULTA" },
+            { archivo: "44 perez gonzales.pdf", hc: "00304", nombre: "PEREZ GONZALES, AUGUSTO", fecha: "22/2/1989", edad: "68", sexo: "M", dep: "Lima", prov: "Lima", dist: "Rímac", obs: "1 CONSULTA" },
+            { archivo: "45 atoche mauricio.pdf", hc: "00314", nombre: "ATOCHE MAURICIO, IDA EMPERATRIZ", fecha: "23/2/1989", edad: "34", sexo: "F", dep: "Piura", prov: "Piura", dist: "Piura", obs: "1 CONSULTA" },
+            { archivo: "46 arias reymodi.pdf", hc: "00315", nombre: "ARIAS REYMONDI, GERALDINI", fecha: "24/2/1989", edad: "1", sexo: "F", dep: "Callao", prov: "Callao", dist: "Ventanilla", obs: "1 CONSULTA" },
+            { archivo: "47 rojas berrospi.pdf", hc: "00335", nombre: "ROJAS BERROSPI, ADELA", fecha: "25/2/1989", edad: "56", sexo: "F", dep: "Lima", prov: "Lima", dist: "Lince", obs: "1 CONSULTA" },
+            { archivo: "48 rivera jimenez.pdf", hc: "00346", nombre: "RIVERA JIMENEZ, HECTOR", fecha: "26/2/1989", edad: "2", sexo: "M", dep: "Lima", prov: "Lima", dist: "Lima", obs: "1 CONSULTA" },
+            { archivo: "49 orellana dioses.pdf", hc: "00353", nombre: "ORELLANA DIOSES, DAVID", fecha: "27/2/1989", edad: "11", sexo: "M", dep: "Lima", prov: "Lima", dist: "Lima", obs: "" },
+            { archivo: "50 lopez carlos.pdf", hc: "00371", nombre: "LOPEZ CARLOS, HENRY", fecha: "28/2/1989", edad: "17", sexo: "M", dep: "Lima", prov: "Lima", dist: "Comas", obs: "1 CONSULTA" },
+            { archivo: "51 garrido vasquez.pdf", hc: "00382", nombre: "GARRIDO VASQUEZ, RUBI", fecha: "1/3/1989", edad: "4", sexo: "F", dep: "Lima", prov: "Lima", dist: "Independencia", obs: "1 CONSULTA" },
+            { archivo: "52 achata rivera.pdf", hc: "00386", nombre: "ACHATA RIVERA, MARIA ELENA", fecha: "2/3/1989", edad: "47", sexo: "F", dep: "Lima", prov: "Lima", dist: "Lima", obs: "1 CONSULTA" },
+            { archivo: "53 villegas milani.pdf", hc: "00393", nombre: "VILLEGAS MILANI, RAQUEL", fecha: "14/6/1988", edad: "65", sexo: "F", dep: "Ica", prov: "Chincha", dist: "Chincha Alta", obs: "" },
+            { archivo: "54 sagardia alva.pdf", hc: "00411", nombre: "SAGARDIA ALVA, MARTHA ELENA", fecha: "4/1/1989", edad: "", sexo: "M", dep: "Ancash", prov: "Santa", dist: "Nuevo Chimbote", obs: "" },
+            { archivo: "55 camacho tenorio.pdf", hc: "00414", nombre: "CAMACHO TENORIO, MARJORIE", fecha: "6/12/1988", edad: "1", sexo: "F", dep: "Callao", prov: "Callao", dist: "Callao", obs: "1 CONSULTA" },
+            { archivo: "56 perea hidalgo.pdf", hc: "00415", nombre: "PEREA HIDALGO, CATHERINE", fecha: "6/3/1989", edad: "22", sexo: "F", dep: "Lima", prov: "Lima", dist: "Santiago de Surco", obs: "" },
+            { archivo: "57 raymudo alcocer.pdf", hc: "00428", nombre: "RAYMUNDO ALCOCER, MILTON", fecha: "7/3/1989", edad: "7", sexo: "M", dep: "Lima", prov: "Lima", dist: "Lima", obs: "" },
+            { archivo: "58 quispe sanabria.pdf", hc: "00433", nombre: "QUISPE SANABRIA, LUIS ALBERTO", fecha: "8/3/1989", edad: "20", sexo: "M", dep: "Junín", prov: "Huancayo", dist: "El Tambo", obs: "1 CONSULTA" },
+            { archivo: "59 fernandez hohl.pdf", hc: "00448", nombre: "FERNANDEZ HOHL, WILLY GUSTAVO", fecha: "9/3/1989", edad: "11", sexo: "M", dep: "Lima", prov: "Lima", dist: "Lima", obs: "" },
+            { archivo: "60 cabrera estrella.pdf", hc: "00450", nombre: "CABRERA ESTRELLA, ARANTXA E.", fecha: "10/3/1989", edad: "6", sexo: "F", dep: "Lima", prov: "Lima", dist: "San Juan de Lurigancho", obs: "" },
+            { archivo: "61 arandia aguero.pdf", hc: "00451", nombre: "ARANDIKA AGÜERO, ANGELICA", fecha: "11/3/1989", edad: "37", sexo: "F", dep: "Lima", prov: "Lima", dist: "Villa María del Triunfo", obs: "" },
+            { archivo: "62 mendo lopez.pdf", hc: "00487", nombre: "MENDO LOPEZ, CARLOS FELIPE", fecha: "12/3/1989", edad: "36", sexo: "M", dep: "Lima", prov: "Lima", dist: "San Miguel", obs: "1 CONSULTA" },
+            { archivo: "63 guillermo chuquichayco.pdf", hc: "00490", nombre: "GUILLERMO CHUQUICHAYCO, ENEDINA H.", fecha: "13/3/1989", edad: "42", sexo: "F", dep: "Lima", prov: "Lima", dist: "Lima", obs: "" },
+            { archivo: "64 roman loayza.pdf", hc: "00492", nombre: "ROMAN LOAYZA, ARMANDO", fecha: "14/3/1989", edad: "48", sexo: "M", dep: "Lima", prov: "Lima", dist: "Los Olivos", obs: "" },
+            { archivo: "65 lucanas leon.pdf", hc: "00501", nombre: "LUCANA LEON, ERIKA MARISOL", fecha: "15/3/1989", edad: "17", sexo: "F", dep: "Lima", prov: "Lima", dist: "Lima", obs: "" },
+            { archivo: "66 moran neyra.pdf", hc: "00503", nombre: "MORAN NEYRA, IRENE", fecha: "16/3/1989", edad: "23", sexo: "F", dep: "Lima", prov: "Lima", dist: "Villa María del Triunfo", obs: "" },
+            { archivo: "67 dueñas chavez.pdf", hc: "00505", nombre: "DUEÑAS CHAVEZ, JUANA", fecha: "17/3/1989", edad: "66", sexo: "F", dep: "Lima", prov: "Lima", dist: "San Juan de Miraflores", obs: "" },
+            { archivo: "68 pascual alvarado.pdf", hc: "00507", nombre: "PASCUAL ALVARADO, PASION", fecha: "18/3/1989", edad: "65", sexo: "F", dep: "Lima", prov: "Lima", dist: "Los Olivos", obs: "1 CONSULTA" },
+            { archivo: "69 cornejo rivera.pdf", hc: "00523", nombre: "CORNEJO RIVERA, CARMEN ANTONIA", fecha: "19/3/1989", edad: "4", sexo: "F", dep: "Callao", prov: "Callao", dist: "La Perla", obs: "1 CONSULTA/H.C. DETERIORADA" },
+            { archivo: "70 reyes adanaque.pdf", hc: "00593", nombre: "REYES ADANAQUE, JORGE", fecha: "20/3/1989", edad: "42", sexo: "M", dep: "Lima", prov: "Lima", dist: "Lima", obs: "" },
+            { archivo: "71 manami condori.pdf", hc: "00621", nombre: "MAMANI CONDORI, CATALINA", fecha: "21/3/1989", edad: "42", sexo: "F", dep: "Lima", prov: "Lima", dist: "Comas", obs: "1 CONSULTA" },
+            { archivo: "72 pino zea.pdf", hc: "00635", nombre: "PINO ZEA, JORGE MARTIN", fecha: "22/3/1989", edad: "20", sexo: "M", dep: "Lima", prov: "Lima", dist: "Pueblo Libre", obs: "1 CONSULTA" },
+            { archivo: "73 giron natividad.pdf", hc: "00704", nombre: "GIRON NATIVIDAD, DIGNA", fecha: "23/3/1989", edad: "69", sexo: "F", dep: "Lima", prov: "Lima", dist: "Lima", obs: "NO TIENE CONSULTA" },
+            { archivo: "74 diaz tuesta.pdf", hc: "00725", nombre: "DIAZ TUESTA, KARINA", fecha: "24/3/1989", edad: "27", sexo: "F", dep: "Lima", prov: "Lima", dist: "Breña", obs: "1 CONSULTA" },
+            { archivo: "75 santiago mansua.pdf", hc: "00750", nombre: "SANTIAGO MANSUA, NATIVIDAD", fecha: "25/3/1989", edad: "79", sexo: "M", dep: "Lima", prov: "Lima", dist: "Lima", obs: "" },
+            { archivo: "76 cervantes curitomay.pdf", hc: "00767", nombre: "CERVANTES CURICOMAY, JESSICA", fecha: "26/3/1989", edad: "13", sexo: "F", dep: "Lima", prov: "Lima", dist: "La Molina", obs: "" },
+            { archivo: "77 sayan moreau.pdf", hc: "00787", nombre: "SAYAN MOREAU, CLARA FLOR", fecha: "27/3/1989", edad: "35", sexo: "F", dep: "Lima", prov: "Lima", dist: "Rímac", obs: "01 CONSULTA" },
+            { archivo: "78 rojas arauco.pdf", hc: "00811", nombre: "ROJAS ARAUCO, MARINA", fecha: "28/3/1989", edad: "38", sexo: "F", dep: "Lima", prov: "Lima", dist: "Ate", obs: "" },
+            { archivo: "79 nauca carajulca.pdf", hc: "00812", nombre: "NAUCA CARAJULCA, FRANCISCA", fecha: "29/3/1989", edad: "47", sexo: "F", dep: "Lima", prov: "Lima", dist: "San Juan de Lurigancho", obs: "" },
+            { archivo: "80 ordinalo madrid.pdf", hc: "00814", nombre: "ORDINOLA MADRID, TEODOLINDA", fecha: "30/3/1989", edad: "60", sexo: "F", dep: "Lima", prov: "Lima", dist: "Lima", obs: "01 CONSULTA" },
+            { archivo: "81 torres infantes.pdf", hc: "00824", nombre: "TORRES INFANTES DE COOK, JESUS ADA", fecha: "31/3/1989", edad: "32", sexo: "F", dep: "Lima", prov: "Lima", dist: "Lima", obs: "" },
+            { archivo: "82 angulo lescano.pdf", hc: "00842", nombre: "ANGULO LESCANO, CRISTIAN ALFONSO", fecha: "1/4/1989", edad: "65", sexo: "M", dep: "Lima", prov: "Lima", dist: "Lima", obs: "01 CONSULTA" },
+            { archivo: "83 conde vilca.pdf", hc: "00844", nombre: "CONDE VILCA, CARMEN JUANA", fecha: "2/4/1989", edad: "52", sexo: "F", dep: "Lima", prov: "Lima", dist: "San Martín de Porres", obs: "" },
+            { archivo: "84 yauri gonzalez.pdf", hc: "00851", nombre: "YAURI GONCALLES, ARMANDO", fecha: "3/4/1989", edad: "25", sexo: "M", dep: "Lima", prov: "Lima", dist: "Comas", obs: "" },
+            { archivo: "85 espinoza anicama.pdf", hc: "00867", nombre: "ESPINOZA ANICAMA, JUAN", fecha: "4/4/1989", edad: "69", sexo: "M", dep: "Lima", prov: "Lima", dist: "Lima", obs: "" },
+            { archivo: "86 miranda granara.pdf", hc: "00880", nombre: "MIRANDA GRANARA, MARIA ROSARIO", fecha: "5/4/1989", edad: "44", sexo: "F", dep: "Lima", prov: "Lima", dist: "San Juan de Lurigancho", obs: "" },
+            { archivo: "87 olivero benites.pdf", hc: "00892", nombre: "OLIVEROS BENITES, GIOVANY EMILIANO", fecha: "6/4/1989", edad: "22", sexo: "M", dep: "Lima", prov: "Lima", dist: "San Martín de Porres", obs: "1 CONSULTA" },
+            { archivo: "88 zambrano bellido.pdf", hc: "00902", nombre: "ZAMBRANO BELLIDO, VANESSA", fecha: "7/4/1989", edad: "9", sexo: "F", dep: "Lima", prov: "Lima", dist: "Breña", obs: "NO TIENE CONSULTA" },
+            { archivo: "89 ayala reques.pdf", hc: "00903", nombre: "AYALA REQUES, LIBORIO", fecha: "8/4/1989", edad: "46", sexo: "M", dep: "Lima", prov: "Lima", dist: "Independencia", obs: "" },
+            { archivo: "90 diaz purisaga.pdf", hc: "00903", nombre: "DIAZ PURISACA, CARMEN EVELIN", fecha: "9/4/1989", edad: "29", sexo: "F", dep: "Lima", prov: "Lima", dist: "Independencia", obs: "" },
+            { archivo: "91 pajita cjavilca.pdf", hc: "00905", nombre: "SANTILLAN CAJALEON, JUREN", fecha: "10/4/1989", edad: "15", sexo: "M", dep: "Ancash", prov: "Chimbote", dist: "", obs: "" },
+            { archivo: "92 santillan cajaleon.pdf", hc: "00906", nombre: "PAITA CAJAVILCA, VIGENTE", fecha: "11/4/1989", edad: "61", sexo: "M", dep: "Ancash", prov: "", dist: "", obs: "" },
+            { archivo: "93 santillan cajaleon.pdf", hc: "00906", nombre: "SANTILLAN CAJALEON, RUBEN", fecha: "12/4/1989", edad: "52", sexo: "M", dep: "Ancash", prov: "", dist: "", obs: "H.C. DETERIORADA" },
+            { archivo: "94 rivas chavez.pdf", hc: "00910", nombre: "RIVAS CHAVEZ, ROSARIO", fecha: "13/4/1989", edad: "49", sexo: "F", dep: "Ayacucho", prov: "Huamanga", dist: "", obs: "" },
+            { archivo: "95 bravo chicori.pdf", hc: "00913", nombre: "BRAVO CHICORI, CARMEN", fecha: "14/4/1989", edad: "54", sexo: "F", dep: "Lima", prov: "Lima", dist: "Lima", obs: "" },
+            { archivo: "96 burgos borja.pdf", hc: "00925", nombre: "BURGOS BORJA, CAROLYNE DIANA", fecha: "15/4/1989", edad: "3", sexo: "F", dep: "Lima", prov: "Lima", dist: "San Juan de Lurigancho", obs: "1 CONSULTA" },
+            { archivo: "97 quispe huamani.pdf", hc: "00933", nombre: "QUISPE HUAMANI, CESAR", fecha: "16/4/1989", edad: "27", sexo: "M", dep: "Cusco", prov: "Cusco", dist: "San Juan de Lurigancho", obs: "1 CONSULTA" },
+            { archivo: "98 carretero ayala.pdf", hc: "00937", nombre: "CARRETERO AYALA, ADRIANA", fecha: "17/4/1989", edad: "46", sexo: "F", dep: "Lima", prov: "Lima", dist: "Lima", obs: "DATOS ILEGIBLE" },
+            { archivo: "99 paz rios.pdf", hc: "00951", nombre: "PAZ RIOS, EDUARDO", fecha: "18/4/1989", edad: "84", sexo: "M", dep: "Lima", prov: "Lima", dist: "Lima", obs: "" },
+            { archivo: "100 yllapuma salas.pdf", hc: "00951", nombre: "YLLAPUMA SALAS, ASUNTA", fecha: "19/4/1989", edad: "77", sexo: "F", dep: "Lima", prov: "Lima", dist: "San Juan de Lurigancho", obs: "" }
+        ];
+
+        let genderChart, ageChart, deptBarChart;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            renderTable(data);
+            initCharts(data);
+        });
+
+        function renderTable(items) {
+            const tbody = document.getElementById("tableBody");
+            tbody.innerHTML = "";
+
+            if (items.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" class="text-center py-8 text-slate-400 font-medium">No se encontraron registros coincidentes.</td></tr>`;
+                document.getElementById("tableCount").innerText = `Mostrando 0 de 100 registros`;
+                return;
+            }
+
+            items.forEach(row => {
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-blue-50/50 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-3.5 px-4 font-mono text-xs font-bold text-blue-700">${row.hc}</td>
+                    <td class="py-3.5 px-4 font-semibold text-slate-800">${row.nombre}</td>
+                    <td class="py-3.5 px-4 text-slate-600 text-xs">${row.fecha}</td>
+                    <td class="py-3.5 px-4 text-xs font-medium">${row.edad}</td>
+                    <td class="py-3.5 px-4"><span class="px-2.5 py-1 rounded-lg text-xs font-bold ${row.sexo === 'M' ? 'bg-sky-100 text-sky-800' : 'bg-pink-100 text-pink-800'}">${row.sexo}</span></td>
+                    <td class="py-3.5 px-4 text-slate-700 text-xs font-semibold">${row.dep}</td>
+                    <td class="py-3.5 px-4 text-slate-600 text-xs">${row.prov}</td>
+                    <td class="py-3.5 px-4 text-slate-600 text-xs">${row.dist}</td>
+                    <td class="py-3.5 px-4 text-xs text-slate-500 italic">${row.obs}</td>
+                    <td class="py-3.5 px-4 text-center">
+                        <button onclick="openPdfModal('${row.archivo}', '${row.nombre}')" class="px-3.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 mx-auto border border-red-200 shadow-sm">
+                            <i class="fa-solid fa-file-pdf"></i> Ver PDF
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById("tableCount").innerText = `Mostrando ${items.length} de ${data.length} registros`;
+        }
+
+        function filterTable() {
+            const fHC = document.getElementById("filterHC").value.toLowerCase();
+            const fNombre = document.getElementById("filterNombre").value.toLowerCase();
+            const fDep = document.getElementById("filterDep").value.toLowerCase();
+            const fProv = document.getElementById("filterProv").value.toLowerCase();
+            const fDist = document.getElementById("filterDist").value.toLowerCase();
+            const fFecha = document.getElementById("filterFecha").value.toLowerCase();
+            const fEdad = document.getElementById("filterEdad").value.toLowerCase();
+            const fSexo = document.getElementById("filterSexo").value;
+
+            const filtered = data.filter(item => {
+                return (
+                    item.hc.toLowerCase().includes(fHC) &&
+                    item.nombre.toLowerCase().includes(fNombre) &&
+                    item.dep.toLowerCase().includes(fDep) &&
+                    item.prov.toLowerCase().includes(fProv) &&
+                    item.dist.toLowerCase().includes(fDist) &&
+                    item.fecha.toLowerCase().includes(fFecha) &&
+                    item.edad.toLowerCase().includes(fEdad) &&
+                    (fSexo === "" || item.sexo === fSexo)
+                );
+            });
+
+            renderTable(filtered);
+            updateCharts(filtered);
+        }
+
+        function resetFilters() {
+            document.getElementById("filterHC").value = "";
+            document.getElementById("filterNombre").value = "";
+            document.getElementById("filterDep").value = "";
+            document.getElementById("filterProv").value = "";
+            document.getElementById("filterDist").value = "";
+            document.getElementById("filterFecha").value = "";
+            document.getElementById("filterEdad").value = "";
+            document.getElementById("filterSexo").value = "";
+            renderTable(data);
+            updateCharts(data);
+        }
+
+        function openPdfModal(fileName, patientName) {
+            const modal = document.getElementById("pdfModal");
+            const iframe = document.getElementById("pdfFrame");
+            const fallback = document.getElementById("fallbackMsg");
+            const downloadLink = document.getElementById("downloadLink");
+            const title = document.getElementById("modalTitle");
+
+            const pdfPath = `pdf/${fileName}`;
+            title.innerHTML = `<i class="fa-solid fa-file-pdf text-red-400"></i> ${patientName}`;
+            
+            iframe.src = pdfPath;
+            downloadLink.href = pdfPath;
+
+            iframe.onerror = () => {
+                iframe.classList.add("hidden");
+                fallback.classList.remove("hidden");
+                fallback.classList.add("flex");
+            };
+            
+            iframe.onload = () => {
+                iframe.classList.remove("hidden");
+                fallback.classList.add("hidden");
+                fallback.classList.remove("flex");
+            };
+
+            modal.classList.add("flex");
+            modal.classList.remove("hidden");
+        }
+
+        function closePdfModal() {
+            const modal = document.getElementById("pdfModal");
+            const iframe = document.getElementById("pdfFrame");
+            iframe.src = "";
+            modal.classList.add("hidden");
+            modal.classList.remove("flex");
+        }
+
+        function initCharts(currentData) {
+            // 1. Gráfico de Sexo
+            const mCount = currentData.filter(d => d.sexo === 'M').length;
+            const fCount = currentData.filter(d => d.sexo === 'F').length;
+            genderChart = new Chart(document.getElementById('genderChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Masculino', 'Femenino'],
+                    datasets: [{ data: [mCount, fCount], backgroundColor: ['#0284c7', '#ec4899'], borderWidth: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11, weight: 'bold' } } } } }
+            });
+
+            // 2. Gráfico de Edad
+            const ageData = getAgeRanges(currentData);
+            ageChart = new Chart(document.getElementById('ageChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['0-17', '18-35', '36-55', '56+', 'N/D'],
+                    datasets: [{ data: ageData, backgroundColor: '#3b82f6', borderRadius: 6 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 5 } } } }
+            });
+
+            // 3. Gráfico de Barras por Departamento
+            const deptStats = getDeptCounts(currentData);
+            deptBarChart = new Chart(document.getElementById('deptBarChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: deptStats.labels,
+                    datasets: [{ data: deptStats.counts, backgroundColor: '#2563eb', borderRadius: 6 }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } }, 
+                    scales: { x: { beginAtZero: true, ticks: { stepSize: 5 } } } 
+                }
+            });
+        }
+
+        function updateCharts(currentData) {
+            const mCount = currentData.filter(d => d.sexo === 'M').length;
+            const fCount = currentData.filter(d => d.sexo === 'F').length;
+            genderChart.data.datasets[0].data = [mCount, fCount];
+            genderChart.update();
+
+            ageChart.data.datasets[0].data = getAgeRanges(currentData);
+            ageChart.update();
+
+            const deptStats = getDeptCounts(currentData);
+            deptBarChart.data.labels = deptStats.labels;
+            deptBarChart.data.datasets[0].data = deptStats.counts;
+            deptBarChart.update();
+        }
+
+        function getAgeRanges(list) {
+            let r1 = 0, r2 = 0, r3 = 0, r4 = 0, r5 = 0;
+            list.forEach(d => {
+                const age = parseInt(d.edad);
+                if (isNaN(age)) r5++;
+                else if (age <= 17) r1++;
+                else if (age <= 35) r2++;
+                else if (age <= 55) r3++;
+                else r4++;
+            });
+            return [r1, r2, r3, r4, r5];
+        }
+
+        function getDeptCounts(list) {
+            const counts = {};
+            list.forEach(d => {
+                const dep = d.dep ? d.dep : "No especificado";
+                counts[dep] = (counts[dep] || 0) + 1;
+            });
+            const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+            return {
+                labels: sorted.map(item => item[0]),
+                counts: sorted.map(item => item[1])
+            };
+        }
+    </script>
+</body>
+</html>
